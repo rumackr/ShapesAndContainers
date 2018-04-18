@@ -3,8 +3,8 @@
  * 'sudo apt-get install libx11-dev' should help.
  */
 
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "CannotResolve"
+//#pragma clang diagnostic push
+//#pragma ide diagnostic ignored "CannotResolve"
 #include <X11/Xlib.h> // Every Xlib program must include this
 #include <X11/Xutil.h> // needed for XGetPixel
 #include <X11/XKBlib.h> // needed for keyboard setup

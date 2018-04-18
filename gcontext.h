@@ -1,7 +1,17 @@
+
+
 #ifndef GCONTEXT_H
 #define GCONTEXT_H
+///forward reference - needed because runLoop needs a target for events
+class DrawingBase;
+
 
 /**
+ * @author Reid Rumack
+ * @date   March 2018
+ * @file   gcontext.h
+ * @lab    Lab 3 - CS3210
+ *
  * This class is intended to be the abstract base class
  * for a graphical context for various platforms.  Any
  * concrete subclass will need to implement the pure virtual
@@ -16,28 +26,21 @@
  * concrete setPixel of the implemnting subclass.  These
  * implementation are expected to be overridden for
  * better performance.
- *
- * */
-
-
-// forward reference - needed because runLoop needs a target for events
-class DrawingBase;
-
-
+ */
 class GraphicsContext
 {
 public:
-    /*********************************************************
+    /* *******************************************************
      * Some constants and enums
      *********************************************************/
-    // This enumerated type is an argument to setMode and allows
-    // us to support two different drawing modes.  MODE_NORMAL is
-    // also call copy-mode and the affect pixel(s) are set to the
-    // color requested.  XOR mode will XOR the new color with the
-    // existing color so that the change is reversible.
+    /// This enumerated type is an argument to setMode and allows
+    /// us to support two different drawing modes.  MODE_NORMAL is
+    /// also call copy-mode and the affect pixel(s) are set to the
+    /// color requested.  XOR mode will XOR the new color with the
+    /// existing color so that the change is reversible.
     enum drawMode {MODE_NORMAL, MODE_XOR};
 
-    // Some colors - for fun
+    /// Some colors - for fun
     static const unsigned int BLACK = 0x000000;
     static const unsigned int BLUE = 0x0000FF;
     static const unsigned int GREEN = 0x00FF00;
@@ -48,10 +51,9 @@ public:
     static const unsigned int GRAY = 0x808080;
     static const unsigned int WHITE = 0xFFFFFF;
 
-
-    /*********************************************************
+    /*========================================================
      * Construction / Destruction
-     *********************************************************/
+     *========================================================/
     // Implementations of this class should include a constructor
     // that creates the drawing canvas (window), sets a background
     // color (which may be configurable), sets a default drawing
@@ -62,75 +64,76 @@ public:
     // their destructors called properly.  Must be virtual.
     virtual ~GraphicsContext();
 
-    /*********************************************************
+    /* *******************************************************
      * Drawing operations
      *********************************************************/
 
-    // Allows the drawing mode to be changed between normal (copy)
-    // and xor.  The implementing context should default to normal.
+    /// Allows the drawing mode to be changed between normal (copy)
+    /// and xor.  The implementing context should default to normal.
     virtual void setMode(drawMode newMode) = 0;
 
-    // Set the current color.  Implementations should default to white.
-    // color is 24-bit RGB value
+    /// Set the current color.  Implementations should default to white.
+    ///color is 24-bit RGB value
     virtual void setColor(unsigned int color) = 0;
 
-    // Set pixel to the current color
+
+
+    /// Set pixel to the current color
     virtual void setPixel(int x, int y) = 0;
 
-    // Get 24-bit RGB pixel color at specified location
-    // unsigned int will likely be 32-bit on 32-bit systems, and
-    // possible 64-bit on some 64-bit systems.  In either case,
-    // it is large enough to hold a 16-bit color.
+    /// Get 24-bit RGB pixel color at specified location
+    /// unsigned int will likely be 32-bit on 32-bit systems, and
+    /// possible 64-bit on some 64-bit systems.  In either case,
+    /// it is large enough to hold a 16-bit color.
     virtual unsigned int getPixel(int x, int y) = 0;
 
-    // This should reset entire context to the current background
+    /// This should reset entire context to the current background
     virtual void clear()=0;
 
     // These are the naive implementations that use setPixel,
     // but are overridable should a context have a better-
     // performing version available.
 
-    /* This is a naive implementation that uses floating-point math
-    * and "setPixel" which will need to be provided by the concrete
-    * implementation.
-    *
-    * Parameters:
-    * 	x0, y0 - origin of line
-    *  x1, y1 - end of line
-    *
-    * Returns: void
-    */
+    /**
+     * Draws a line from point (x0,y0) to (x1,y1) using the Bresenham's
+     * line algorithm. Only use integer arithmetic.
+     * @brief  Draws a line from point (x0,y0) to (x1,y1).
+     * Parameters:
+     * @param x0  origin of line
+     * @param y0  origin of line
+     * @param x1 end of line
+     * @param y1 end of line
+     */
     virtual void drawLine(int x0, int y0, int x1, int y1);
 
-    /* This is a naive implementation that uses floating-point math
-     * and "setPixel" which will need to be provided by the concrete
-     * implementation.
-     *
+    /**
+     * Draws a circle using the mid-point circle algorithm. Uses only
+     * integer arithmetic.
+     * @brief draws circle
      * Parameters:
-     * 	x0, y0 - origin/center of circle
-     *  radius - radius of circle
-     *
-     * Returns: void
+     * 	@param x0 origin/center of circle
+     * 	@param y0 origin/center of circle
+     *  @param radius radius of circle
      */
     virtual void drawCircle(int x0, int y0, unsigned int radius);
 
 
-    /*********************************************************
+    /* *******************************************************
      * Event loop operations
      *********************************************************/
 
-    // Run Event loop.  This routine will receive events from
-    // the implementation and pass them along to the drawing.  It
-    // will return when the window is closed or other implementation-
-    // specific sequence.
+    /// Run Event loop.  This routine will receive events from
+    /// the implementation and pass them along to the drawing.  It
+    /// will return when the window is closed or other implementation-
+    /// specific sequence.
     virtual void runLoop(DrawingBase* drawing) = 0;
 
-    // This method will end the current loop if one is running
-    // a default version is supplied
+    /// This method will end the current loop if one is running
+    /// a default version is supplied
     virtual void endLoop();
 
 
-    /*********************************************************
+    /* *******************************************************
      * Utility operations
      *********************************************************/
 
@@ -140,14 +143,35 @@ public:
     // returns the height of the window
     virtual int getWindowHeight() = 0;
 
+
+    /* ******************************************************
+     * Line drawing helper operations
+     *********************************************************/
+    /**
+     * Draws a line with slope grater then 1
+     * (helper function for drawLine)
+     * @param x0  origin of line
+     * @param y0  origin of line
+     * @param x1 end of line
+     * @param y1 end of line
+     */
+    void drawLineHigh(const int x0, const int y0, const int x1,const int y1);
+
+    /**
+     * Draws a line with slope less then 1
+     * (helper function for drawLine)
+     * @param x0  origin of line
+     * @param y0  origin of line
+     * @param x1 end of line
+     * @param y1 end of line
+     */
+    void drawLineLow(const int x0, const int y0, const int x1,const int y1);
+
 protected:
     // this flag is used to control whether the event loop
     // continues to run.
     bool run;
-
-private:
-    void drawShallowLine(int x0, int x1, int y0, int y1);
-    void drawSteepLine(int x0, int x1, int y0, int y1);
 };
+
 
 #endif

@@ -6,7 +6,21 @@
 #define LAB4_TRIANGLE_H
 
 
-class Triangle {
+#include "Shape.h"
+
+class Triangle: public Shape {
+    private:
+        double angle0,angle1,angle2 = 0;
+    protected:
+        matrix p1 = matrix(1,4);
+        matrix p2 = matrix(1,4);
+    public:
+        Triangle(const Color &color, const matrix &p0, const matrix &p1, const matrix &p2);
+        Triangle::Triangle(const Color &color, double x0, double y0, double x1, double y1, double x2, double y2);
+
+    void draw(GraphicsContext *gc) override;
+
+    Shape *clone() const override;
 
 };
 

@@ -9,15 +9,17 @@
 #include "Shape.h"
 
 class Point: public Shape {
-public:
-    Point(const Color &color, double x, double y);
+    public:
+        Point(const Color &color, double x, double y);
 
-    Point(const Shape &shape);
+        Point(const Color &color, const matrix &p0);
+
+        Point(const Shape &shape);
 
 
-    void draw(GraphicsContext *gc) override;
+        void draw(GraphicsContext *gc) override;
 
-    Point *clone() const override;
+        Point *clone() const override;
 };
 
 

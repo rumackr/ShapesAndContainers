@@ -12,12 +12,18 @@
 
 class Shape {
     protected:
-        Color color;
-        matrix origin;
-    public:
+        Color color = Color(0, 0, 0);
+        matrix p0   = matrix(1,4);
+    public:`
         Shape(Color color, double x, double y);
+
+        Shape(const Color &color, const matrix &p0);
+
         Shape(const Shape& shape);
-        virtual ~Shape();
+
+    Shape();
+
+    virtual ~Shape();
         virtual Shape& operator=(const Shape& rhs);
         virtual void draw(GraphicsContext* gc) = 0;
       //Todo  virtual out();

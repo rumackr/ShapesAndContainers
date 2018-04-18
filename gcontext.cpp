@@ -1,12 +1,16 @@
-/* This is an abstract base class representing a generic graphics
- * context.  Most implementation specifics will need to be provided by
- * a concrete implementation.  See header file for specifics. */
+/**
+ * @author Reid Rumack
+ * @file   gcontext.cpp
+ * @date   3/23/2018
+ * @project lab 3
+ * \see gcontext.h
+ */
 
 #define _USE_MATH_DEFINES	// for M_PI
 #include <cmath>	// for trig functions
 #include "gcontext.h"
 
-/*
+/**
  * Destructor - does nothing
  */
 GraphicsContext::~GraphicsContext()
@@ -16,124 +20,161 @@ GraphicsContext::~GraphicsContext()
 }
 
 
-/* This is a naive implementation that uses floating-point math
- * and "setPixel" which will need to be provided by the concrete
- * implementation.
+/**
+ * Draws a line from point (x0,y0) to (x1,y1) using the Bresenham's
+ * line algorithm. Only use integer arithmetic.
+ * @brief  Draws a line from point (x0,y0) to (x1,y1).
  *
- * Parameters:
- * 	x0, y0 - origin of line
- *  x1, y1 - end of line
- *
- * Returns: void
+ * @param x0  origin of line
+ * @param y0  origin of line
+ * @param x1 end of line
+ * @param y1 end of line
  */
-//Based on pseudocode from Wikipedia
-void drawShallowLine(int x0, int x1, int y0, int y1);
-void drawSteepLine(int x0, int x1, int y0, int y1);
 void GraphicsContext::drawLine(int x0, int y0, int x1, int y1)
 {
 
-    if (std::abs(y1-y0)<std::abs(x1-x0)) {
-        if (x0>x1) {
-            drawShallowLine(x1, y1, x0, y0);
-        }
-        else {
-            drawShallowLine(x0, y0, x1, y1);
-        }
-    }
-    else {
-        if (y0>y1) {
-            drawSteepLine(x1, y1, x0, y0);
-        }
-        else {
-            drawSteepLine(x0, y0, x1, y1);
-        }
-    }
+    // find slope
+    int dx = x1-x0;
+    int dy = y1-y0;
+
+    // make sure we actually have a line
+    if (dx != 0 || dy !=0)
+    {
+        // slope < 1?
+        if (std::abs(dx)>std::abs(dy)) {
+            // iterate over x
+            //is the reversed
+            (dx < 0) ? (drawLineLow(x1, y1, x0, y0)) : (drawLineLow(x0, y0, x1, y1));
+            // end of if |slope| < 1
+        } else {
+            // iterate over y
+            // is the slope negative
+            (dy < 0) ? (drawLineHigh(x1,y1,x0,y0)) : (drawLineHigh(x0,y0,x1,y1));
+
+        } // end of else |slope| >= 1
+    } // end of if it is a real line (dx!=0 || dy !=0)
+    return;
 }
-void GraphicsContext::drawShallowLine(int x0, int y0, int x1, int y1) {
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    int yi = 1;
-    if (dy<0) {
-        yi = -1;
+/**
+ * Draws a line with slope less then 1
+ * (helper function for drawLine)
+ * @param x0  origin of line
+ * @param y0  origin of line
+ * @param x1 end of line
+ * @param y1 end of line
+ */
+void GraphicsContext::drawLineLow(const int x0, const int y0, const int x1, const int y1) {
+    int dx,dy;
+    int yIntercept = 1;
+
+    //find slope
+    dx = x1 - x0;
+    dy = y1 - y0;
+    if(dy < 0){	//negative slope
+        yIntercept = -1;
         dy = -dy;
     }
-    int D = 2*dy - dx;
-    int y = y0;
 
-    for (int x = x0; x<=x1; x++) {
-        setPixel(x, y);
-        if (D>0) {
-            y+=yi;
-            D-=2*dx;
+    int D = (dy << 1) - dx;
+    int y = y0;
+    for (int x = x0; x < x1; ++x) {
+        setPixel(x,y);
+        if (D > 0){
+            y+= yIntercept;
+            D-= (dx << 1);
         }
-        D+=2*dy;
+        D += (dy << 1);
     }
+
 }
-void GraphicsContext::drawSteepLine(int x0, int y0, int x1, int y1) {
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    int xi = 1;
-    if (dx<0) {
-        xi = -1;
+/**
+ * Draws a line with slope grater then 1
+ * (helper function for drawLine)
+ * @param x0  origin of line
+ * @param y0  origin of line
+ * @param x1 end of line
+ * @param y1 end of line
+ */
+void GraphicsContext::drawLineHigh(const int x0, const int y0, const int x1, const int y1) {
+    int dx,dy;
+    int xIntercept = 1;
+
+    //find slope
+    dx = x1 - x0;
+    dy = y1 - y0;
+
+    if(dx < 0){ // reversed line
+        xIntercept = -1;
         dx = -dx;
     }
-    int D = 2*dx - dy;
-    int x = x0;
 
-    for (int y = y0; y<=y1; y++) {
-        setPixel(x, y);
-        if (D>0) {
-            x+=xi;
-            D-=2*dy;
+    int D = (dx << 1) - dy;
+    int x = x0;
+    for (int y = y0; y < y1; ++y) {
+        setPixel(x,y);
+        if (D > 0){
+            x+= xIntercept;
+            D-= (dy << 1);
         }
-        D+=2*dx;
+        D += (dx << 1);
     }
+
 }
 
 
-
-/* This is a naive implementation that uses floating-point math
- * and "setPixel" which will need to be provided by the concrete
- * implementation.
+/**
+ * Draws a circle using the mid-point circle algorithm. Uses only
+ * integer arithmetic.
+ * @brief draws circle
  *
- * Parameters:
- * 	x0, y0 - origin/center of circle
- *  radius - radius of circle
- *
- * Returns: void
+ * 	@param x0 origin/center of circle
+ * 	@param y0 origin/center of circle
+ *  @param radius radius of circle
  */
-//Based on code from Wikipedia
 void GraphicsContext::drawCircle(int x0, int y0, unsigned int radius)
 {
-    int x = radius - 1;
-    int y = 0;
-    int dx = 1;
-    int dy = 1;
-    int err = dx - 2*radius;
+    int x,y;
+    int dx,dy;
+    //decision parameter
+    int D;
 
-    while (x>=y) {
+    x = radius-1;
+    y = 0;
+    dy = 1;
+    dx = 1;
+
+    //dx - diameter
+    D	= dx - (radius << 1);
+
+    while (x >= y){
+        //draw lower right of circle
         setPixel(x0 + x, y0 + y);
-        setPixel(x0 + x, y0 - y);
-        setPixel(x0 - x, y0 + y);
-        setPixel(x0 - x, y0 - y);
         setPixel(x0 + y, y0 + x);
-        setPixel(x0 + y, y0 - x);
+        //draw lower left of circle
+        setPixel(x0 - x, y0 + y);
         setPixel(x0 - y, y0 + x);
+        //draw upper right of circle
+        setPixel(x0 + x, y0 - y);
+        setPixel(x0 + y, y0 - x);
+        //draw upper left of circle
+        setPixel(x0 - x, y0 - y);
         setPixel(x0 - y, y0 - x);
 
-        if (err<=0) {
+        if (D <= 0 ){
+            // mid-point is on or inside the perimeter
             y++;
-            err+=dy;
-            dy+=2;
-        }
-
-        if (err>0) {
+            D += dy;
+            dy += 2;
+        }else{
+            // mid-point is outside the perimeter
             x--;
-            dx+=2;
-            err += dx - 2*radius;
+            dx += 2;
+            //dx - diameter
+            D += dx - (radius << 1);
         }
     }
 }
+bfr
 
 void GraphicsContext::endLoop()
 {
